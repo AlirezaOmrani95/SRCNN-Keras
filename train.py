@@ -66,8 +66,8 @@ def model():
     SRCNN.compile(optimizer=keras.optimizers.Adam(), loss='mse')
     return SRCNN
 
-SR_Path = '/media/aro/New Volume/Super resolution dataset/set5/Train/'
-Valid_path = '/media/aro/New Volume/Super resolution dataset/set5/Valid/'
+SR_Path = '/Super resolution dataset/set5/Train/'
+Valid_path = '/Super resolution dataset/set5/Valid/'
 
 input_SR_paths = [
         os.path.join(SR_Path, fname)
@@ -89,10 +89,7 @@ train_bsize = 2
 train_generator = OxfordPets(batch_size = train_bsize, img_size = img_size, input_img_paths = input_SR_paths)
 Valid_generator = OxfordPets(batch_size = train_bsize, img_size = img_size, input_img_paths = Valid_SR_paths)
 
-save = ModelCheckpoint('/media/aro/New Volume/Super resolution dataset/set5/results/SRCNN/laplacian 500/laplacian SRCNN.hdf5', save_best_only=True)
-
-if os.path.exists('/media/aro/New Volume/Super resolution dataset/set5/results/SRCNN/laplacian 500/laplacian SRCNN.hdf5'):
-  model.load_weights('/media/aro/New Volume/Super resolution dataset/set5/results/SRCNN/laplacian 500/laplacian SRCNN.hdf5')
+save = ModelCheckpoint('laplacian SRCNN.hdf5', save_best_only=True)
 
 history = model.fit(train_generator,epochs=50,callbacks=[save], validation_data=Valid_generator)
 
@@ -103,23 +100,3 @@ plt.ylabel("MSE Value")
 plt.xlabel("No. epoch")
 plt.legend(loc = "upper left")
 plt.show()
-
-s_input = load_img("/media/aro/New Volume/Super resolution dataset/set5/results/input/ppt3.png", target_size=(640,512))
-
-s = get_lowres_image(s_input,2)
-s = cv2.cvtColor(np.array(s),cv2.COLOR_RGB2YCrCb)
-S_Y = s[:,:,0]
-_max = np.max(S_Y)
-_min = np.min(S_Y)
-S_Y_ex = np.expand_dims(S_Y,-1)
-S_Y_ex = np.expand_dims(S_Y_ex,0)
-a = model.predict(S_Y_ex)
-a = np.squeeze(a)
-a_min = np.min(a)
-a = a+np.abs(a_min)
-a_max = np.max(a)
-a = (a/a_max)*255
-a = np.uint8(a)
-S_Y =S_Y+(a*0.1)
-a = (S_Y/np.max(S_Y))*255
-cv2.imwrite('/media/aro/New Volume/Super resolution dataset/set5/results/SRCNN/laplacian 500/ppt3_out_luminance_new1.png',a)
